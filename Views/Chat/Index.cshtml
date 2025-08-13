@@ -1,0 +1,475 @@
+@{
+    ViewData["Title"] = "ChatApp - Real-Time Mesajlaşma";
+    Layout = "_Layout";
+    bool isLoggedIn = !string.IsNullOrEmpty(ViewBag.Username as string);
+}
+
+<style>
+.hero-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 80vh;
+    color: white;
+    padding: 40px 0;
+}
+
+.hero-content {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.hero-subtitle {
+    font-size: 1.3rem;
+    margin-bottom: 30px;
+    opacity: 0.9;
+}
+
+.feature-card {
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 30px;
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+}
+
+.login-card {
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    color: #333;
+}
+
+.chat-option-card {
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.chat-option-card:hover {
+    transform: translateY(-5px);
+    background: rgba(255,255,255,0.2);
+}
+
+.user-welcome {
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+@@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    .hero-section {
+        padding: 30px 0;
+        min-height: auto;
+    }
+}
+</style>
+
+<div class="hero-section">
+    <div class="container">
+        @if (isLoggedIn)
+        {
+            <!-- Giriş yapmış kullanıcılar için -->
+            <div class="user-welcome">
+                <div class="d-flex justify-content-between align-items-center flex-wrap">
+                    <div>
+                        <h3><i class="fas fa-user-circle me-2"></i>Hoş geldin, @(ViewBag.DisplayName ?? ViewBag.Username)!</h3>
+                        <p class="mb-0">Hangi sohbet türünü tercih ediyorsun?</p>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="/Profile" class="btn btn-outline-light btn-sm" title="Profil Ayarları">
+                            <i class="fas fa-user-cog"></i> Profil
+                        </a>
+                        @if (ViewBag.IsAdmin == true)
+                        {
+                            <a href="/Admin" class="btn btn-outline-warning btn-sm" title="Admin Panel">
+                                <i class="fas fa-users-cog"></i> Admin
+                            </a>
+                        }
+                        <form method="post" action="/Auth/Logout" style="display: inline;">
+                            <button type="submit" class="btn btn-outline-danger btn-sm" title="Çıkış Yap">
+                                <i class="fas fa-sign-out-alt"></i> Çıkış
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sohbet seçenekleri -->
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="chat-option-card">
+                        <div class="mb-4">
+                            <i class="fas fa-user-friends fa-4x text-info"></i>
+                        </div>
+                        <h3 class="mb-3">Özel Mesajlaşma</h3>
+                        <p class="mb-4">Belirli kullanıcılarla birebir güvenli mesajlaşma yapın. Sadece siz ve karşı taraf mesajları görebilir.</p>
+                        <ul class="list-unstyled mb-4">
+                            <li><i class="fas fa-check text-success me-2"></i>Özel konuşmalar</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Hedef kullanıcı seçimi</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Şifreli mesajlaşma</li>
+                        </ul>
+                        <a href="/Chat/Private" class="btn btn-info btn-lg">
+                            <i class="fas fa-arrow-right me-2"></i>Özel Sohbet Başlat
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-4">
+                    <div class="chat-option-card">
+                        <div class="mb-4">
+                            <i class="fas fa-users fa-4x text-success"></i>
+                        </div>
+                        <h3 class="mb-3">Genel Sohbet</h3>
+                        <p class="mb-4">Herkesle açık sohbet edin. Tüm kullanıcılar mesajlarınızı görebilir ve katılabilir.</p>
+                        <ul class="list-unstyled mb-4">
+                            <li><i class="fas fa-check text-success me-2"></i>Herkese açık</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Grup sohbeti</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Anlık katılım</li>
+                        </ul>
+                        <a href="/Chat/Public" class="btn btn-success btn-lg">
+                            <i class="fas fa-arrow-right me-2"></i>Genel Sohbet Başlat
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-4">
+                    <div class="chat-option-card">
+                        <div class="mb-4">
+                            <i class="fas fa-users-cog fa-4x text-warning"></i>
+                        </div>
+                        <h3 class="mb-3">Grup Sohbetleri</h3>
+                        <p class="mb-4">Arkadaşlarınızla özel gruplar oluşturun. Yönetici kontrolü ve üye davetleri.</p>
+                        <ul class="list-unstyled mb-4">
+                            <li><i class="fas fa-check text-warning me-2"></i>Özel gruplar</li>
+                            <li><i class="fas fa-check text-warning me-2"></i>Üye yönetimi</li>
+                            <li><i class="fas fa-check text-warning me-2"></i>Grup ayarları</li>
+                        </ul>
+                        <div class="d-grid gap-2">
+                            <a href="/Chat/CreateGroup" class="btn btn-warning">
+                                <i class="fas fa-plus me-2"></i>Yeni Grup Oluştur
+                            </a>
+                            <button class="btn btn-outline-warning" onclick="showMyGroups()">
+                                <i class="fas fa-list me-2"></i>Gruplarım
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <!-- Giriş yapmamış kullanıcılar için -->
+            <div class="row align-items-center">
+                <!-- Sol taraf - Proje tanıtımı -->
+                <div class="col-lg-7">
+                    <div class="hero-content">
+                        <h1 class="hero-title">
+                            <i class="fas fa-comments me-3"></i>ChatApp
+                        </h1>
+                        <p class="hero-subtitle">
+                            Modern, güvenli ve real-time mesajlaşma deneyimi
+                        </p>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <div class="text-center mb-3">
+                                    <i class="fas fa-bolt fa-3x text-warning"></i>
+                                </div>
+                                <h4>Anlık Mesajlaşma</h4>
+                                <p>SignalR teknolojisi ile milisaniye hızında mesaj iletimi</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <div class="text-center mb-3">
+                                    <i class="fas fa-shield-alt fa-3x text-success"></i>
+                                </div>
+                                <h4>Güvenli İletişim</h4>
+                                <p>End-to-end şifreleme ve güvenli veri saklama</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <div class="text-center mb-3">
+                                    <i class="fas fa-users fa-3x text-info"></i>
+                                </div>
+                                <h4>Grup & Özel Sohbet</h4>
+                                <p>İstediğiniz kişilerle özel veya herkesle grup sohbeti</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <div class="text-center mb-3">
+                                    <i class="fas fa-mobile-alt fa-3x text-primary"></i>
+                                </div>
+                                <h4>Responsive Tasarım</h4>
+                                <p>Tüm cihazlarda mükemmel kullanım deneyimi</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sağ taraf - Giriş formu -->
+                <div class="col-lg-5">
+                    <div class="login-card">
+                        <div class="text-center mb-4">
+                            <h3><i class="fas fa-sign-in-alt me-2"></i>Giriş Yap</h3>
+                            <p class="text-muted">Hesabın var mı? Hemen giriş yap!</p>
+                        </div>
+
+                        <form id="loginForm">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Kullanıcı Adı</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    <input type="text" class="form-control" id="username" name="username" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Şifre</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <input type="password" class="form-control" id="password" name="password" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
+                                <i class="fas fa-sign-in-alt me-2"></i>Giriş Yap
+                            </button>
+                        </form>
+
+                        <div class="text-center">
+                            <hr class="my-4">
+                            <p class="text-muted">Hesabın yok mu?</p>
+                            <a href="/Auth/Register" class="btn btn-outline-primary btn-lg">
+                                <i class="fas fa-user-plus me-2"></i>Kayıt Ol
+                            </a>
+                        </div>
+
+                        <div id="loginMessage" class="mt-3" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+
+@section Scripts {
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const isLoggedIn = '@(ViewBag.Username)' !== '';
+    
+    if (!isLoggedIn) {
+        // Giriş formu için JavaScript
+        const loginForm = document.getElementById('loginForm');
+        const loginMessage = document.getElementById('loginMessage');
+        
+        if (loginForm) {
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('username').value.trim();
+                const password = document.getElementById('password').value.trim();
+                
+                if (!username || !password) {
+                    showMessage('Lütfen tüm alanları doldurun.', 'danger');
+                    return;
+                }
+                
+                // Giriş butonu loading state
+                const submitBtn = loginForm.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Giriş yapılıyor...';
+                submitBtn.disabled = true;
+                
+                try {
+                    const response = await fetch('/api/userapi/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            username: username,
+                            password: password
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showMessage('Giriş başarılı! Yönlendiriliyorsunuz...', 'success');
+                        
+                        // Local storage'a kaydet
+                        localStorage.setItem('chatapp_username', username);
+                        localStorage.setItem('chatapp_login_time', new Date().toISOString());
+                        
+                        // Sayfayı yenile
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        showMessage('Giriş başarısız: ' + result.message, 'danger');
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    showMessage('Giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.', 'danger');
+                } finally {
+                    // Butonu eski haline getir
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            });
+        }
+        
+        function showMessage(message, type) {
+            if (loginMessage) {
+                loginMessage.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>`;
+                loginMessage.style.display = 'block';
+                
+                // Auto hide after 5 seconds
+                setTimeout(() => {
+                    const alert = loginMessage.querySelector('.alert');
+                    if (alert) {
+                        alert.classList.remove('show');
+                        setTimeout(() => {
+                            loginMessage.style.display = 'none';
+                        }, 150);
+                    }
+                }, 5000);
+            }
+        }
+    }
+});
+
+// Groups functionality
+function showMyGroups() {
+    // Show my groups modal
+    const modal = new bootstrap.Modal(document.getElementById('myGroupsModal'));
+    modal.show();
+    loadMyGroups();
+}
+
+function loadMyGroups() {
+    const groupsList = document.getElementById('myGroupsList');
+    groupsList.innerHTML = '<div class="text-center py-3"><div class="spinner-border" role="status"></div></div>';
+    
+    fetch('/Chat/GetMyGroups')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.groups) {
+                if (data.groups.length === 0) {
+                    groupsList.innerHTML = '<div class="text-center text-muted py-4">Henüz hiç grubunuz yok.<br><a href="/Chat/CreateGroup" class="btn btn-primary mt-2">İlk grubu oluşturun</a></div>';
+                } else {
+                    groupsList.innerHTML = data.groups.map(group => `
+                        <div class="group-item d-flex align-items-center p-3 border-bottom">
+                            <div class="avatar me-3">
+                                ${group.GroupImageUrl ? 
+                                    `<img src="${group.GroupImageUrl}" alt="${group.Name}">` :
+                                    `<span>${group.Name.charAt(0).toUpperCase()}</span>`
+                                }
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">${group.Name}</h6>
+                                <small class="text-muted">${group.MemberCount} üye</small>
+                            </div>
+                            <a href="/Chat/Group/${group.Id}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    `).join('');
+                }
+            } else {
+                groupsList.innerHTML = '<div class="text-center text-danger py-3">Gruplar yüklenirken hata oluştu</div>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading groups:', error);
+            groupsList.innerHTML = '<div class="text-center text-danger py-3">Gruplar yüklenirken hata oluştu</div>';
+        });
+}
+</script>
+
+<!-- My Groups Modal -->
+<div class="modal fade" id="myGroupsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-users me-2"></i>Gruplarım
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="myGroupsList">
+                    <!-- Groups will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="/Chat/CreateGroup" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Yeni Grup Oluştur
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+<style>
+.group-item {
+    transition: background-color 0.2s;
+}
+
+.group-item:hover {
+    background-color: rgba(0,0,0,0.05);
+}
+
+.group-item .avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.group-item .avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+</style>

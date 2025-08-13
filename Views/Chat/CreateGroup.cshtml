@@ -1,0 +1,437 @@
+@{
+    ViewData["Title"] = "Yeni Grup Oluştur";
+    Layout = "_Layout";
+}
+
+@section Styles {
+<style>
+    .create-group-container {
+        background: var(--color-bg);
+        min-height: calc(100vh - 76px);
+        padding: 2rem 0;
+    }
+    
+    .create-group-card {
+        background: var(--color-panel);
+        border: 1px solid var(--color-border-strong);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-soft);
+        max-width: 580px;
+        margin: 0 auto;
+    }
+    
+    .create-group-header {
+        background: linear-gradient(135deg, var(--color-accent), #1863d2);
+        border-radius: var(--radius) var(--radius) 0 0;
+        padding: 1.5rem;
+        border: none;
+        text-align: center;
+        color: white;
+    }
+    
+    .create-group-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .create-group-header p {
+        margin: 0.5rem 0 0 0;
+        opacity: 0.9;
+        font-size: 0.9rem;
+    }
+    
+    .create-group-body {
+        padding: 2rem;
+    }
+    
+    .group-image-section {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .group-image-upload {
+        width: 120px;
+        height: 120px;
+        border: 2px dashed var(--color-border-strong);
+        border-radius: 50%;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: var(--transition);
+        background: var(--color-bg-alt);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .group-image-upload:hover {
+        border-color: var(--color-accent);
+        background: var(--color-panel);
+    }
+    
+    .upload-placeholder {
+        text-align: center;
+        padding: 1rem;
+    }
+    
+    .upload-placeholder i {
+        font-size: 2rem;
+        color: var(--color-text-dim);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    .upload-placeholder p {
+        font-size: 0.8rem;
+        color: var(--color-text-dim);
+        margin: 0;
+    }
+    
+    .group-image-preview {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+    
+    .form-section {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-section label {
+        color: var(--color-text);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-section label i {
+        color: var(--color-accent);
+    }
+    
+    .form-control, .form-select {
+        background: var(--color-bg-alt);
+        border: 1px solid var(--color-border);
+        color: var(--color-text);
+        border-radius: var(--radius-sm);
+        padding: 0.75rem 1rem;
+        transition: var(--transition);
+    }
+    
+    .form-control:focus, .form-select:focus {
+        background: var(--color-panel);
+        border-color: var(--color-accent);
+        box-shadow: 0 0 0 2px rgba(29,114,242,.2);
+        color: var(--color-text);
+    }
+    
+    .form-control::placeholder {
+        color: var(--color-text-dim);
+    }
+    
+    .form-text {
+        color: var(--color-text-dim);
+        font-size: 0.8rem;
+        margin-top: 0.25rem;
+    }
+    
+    .required-star {
+        color: var(--color-danger);
+    }
+    
+    /* === Member Picker Redesign === */
+    .member-picker-wrapper { background: var(--color-bg-alt); border:1px solid var(--color-border); border-radius: var(--radius); padding:1rem 1.25rem; }
+    .member-picker-head { display:flex; align-items:center; justify-content:space-between; margin-bottom: .75rem; gap:.75rem; flex-wrap:wrap; }
+    .member-picker-head h5 { margin:0; font-size: .95rem; font-weight:600; display:flex; align-items:center; gap:.5rem; }
+    .member-picker-head .count { font-size:.7rem; background: var(--color-panel); border:1px solid var(--color-border); padding:2px 8px; border-radius: 999px; letter-spacing:.5px; color: var(--color-text-dim); }
+    .member-picker-grid { display:grid; gap:1rem; grid-template-columns: 1fr 1fr; }
+    @@media (max-width: 768px){ .member-picker-grid { grid-template-columns:1fr; } }
+    .member-panel { display:flex; flex-direction:column; min-height:220px; }
+    .member-panel-title { font-size:.75rem; text-transform:uppercase; letter-spacing:.75px; font-weight:600; color:var(--color-text-dim); margin:0 0 .5rem; display:flex; align-items:center; gap:.4rem; }
+    .member-search-box { position:relative; }
+    .member-search-box input { padding-left:2.4rem; }
+    .member-search-box i { position:absolute; left: .9rem; top:50%; transform:translateY(-50%); color:var(--color-text-dim); }
+    .member-results, .member-selected { background: var(--color-panel); border:1px solid var(--color-border); border-radius: var(--radius-sm); flex:1; overflow:auto; padding:.25rem 0; }
+    .member-results.empty, .member-selected.empty { display:flex; align-items:center; justify-content:center; text-align:center; }
+    .member-empty { padding:1.2rem .75rem; color:var(--color-text-dim); font-size:.8rem; }
+    .user-item { display:flex; align-items:center; gap:.75rem; padding:.55rem .9rem; cursor:pointer; transition: background .15s; position:relative; }
+    .user-item:hover { background: var(--color-bg-alt); }
+    .user-item + .user-item { border-top:1px solid var(--color-border); }
+    .user-avatar { width:34px; height:34px; border-radius:50%; background: linear-gradient(135deg,var(--color-accent),#1863d2); display:flex; align-items:center; justify-content:center; font-weight:600; color:#fff; font-size:.9rem; overflow:hidden; }
+    .user-avatar img { width:100%; height:100%; object-fit:cover; }
+    .user-info { flex:1; min-width:0; }
+    .user-info h6 { margin:0; font-size:.8rem; font-weight:600; color: var(--color-text); white-space:nowrap; text-overflow:ellipsis; overflow:hidden; }
+    .user-info small { display:block; font-size:.65rem; color: var(--color-text-dim); }
+    .add-indicator { color: var(--color-accent); font-size:1rem; opacity:.85; }
+    .selected-user-chip-container { display:flex; flex-wrap:wrap; gap:.4rem; }
+    .selected-user-chip { background: var(--color-accent); color:#fff; display:inline-flex; align-items:center; gap:.4rem; padding: .35rem .65rem .35rem .5rem; border-radius: 24px; font-size:.7rem; font-weight:500; letter-spacing:.3px; position:relative; }
+    .selected-user-chip .chip-initial { background:rgba(255,255,255,.15); width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.6rem; font-weight:600; }
+    .selected-user-chip .remove-user { border:none; background:rgba(0,0,0,.18); color:#fff; width:18px; height:18px; display:flex; align-items:center; justify-content:center; font-size:.65rem; border-radius:50%; padding:0; cursor:pointer; transition:.15s; }
+    .selected-user-chip .remove-user:hover { background:rgba(0,0,0,.35); }
+    .member-selected { padding:.5rem; }
+    .member-selected.empty { padding:0; }
+    .member-foot-note { margin-top:.6rem; font-size:.65rem; color: var(--color-text-dim); display:flex; justify-content:space-between; gap:.75rem; flex-wrap:wrap; }
+    .limit-warning { color: var(--color-danger); }
+    .help-inline { font-size:.65rem; color: var(--color-text-dim); }
+    
+    .privacy-section {
+        background: var(--color-bg-alt);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        padding: 1rem;
+    }
+    
+    .form-check {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .form-check-input {
+        margin: 0;
+        accent-color: var(--color-accent);
+    }
+    
+    .form-check-label {
+        color: var(--color-text);
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+    
+    .form-check-label strong {
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+    
+    .form-check-label small {
+        color: var(--color-text-dim);
+    }
+    
+    .action-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius-sm);
+        font-weight: 600;
+        transition: var(--transition);
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+    
+    .btn-secondary {
+        background: var(--color-bg-alt);
+        color: var(--color-text-dim);
+        border: 1px solid var(--color-border-strong);
+    }
+    
+    .btn-secondary:hover {
+        background: var(--color-panel);
+        color: var(--color-text);
+    }
+    
+    .btn-primary {
+        background: var(--color-accent);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #1863d2;
+    }
+    
+    .btn-primary:disabled {
+        background: var(--color-text-dim);
+        cursor: not-allowed;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 2rem 1rem;
+        color: var(--color-text-dim);
+    }
+    
+    .empty-state i {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        display: block;
+        opacity: 0.5;
+    }
+    
+    .empty-state p {
+        margin: 0.5rem 0 0 0;
+        font-size: 0.9rem;
+    }
+    
+    .empty-state small {
+        font-size: 0.8rem;
+        opacity: 0.7;
+    }
+
+    @@media (max-width: 768px) {
+        .create-group-container {
+            padding: 1rem;
+        }
+        
+        .create-group-body {
+            padding: 1.5rem;
+        }
+        
+    .action-buttons { grid-template-columns: 1fr; }
+    }
+</style>
+}
+
+<div class="create-group-container">
+    <div class="container">
+        <div class="create-group-card">
+            <div class="create-group-header">
+                <h2>
+                    <i class="bi bi-people-fill"></i>
+                    Yeni Grup Oluştur
+                </h2>
+                <p>Arkadaşlarınızla grup sohbeti başlatın</p>
+            </div>
+            
+            <div class="create-group-body">
+                <form id="createGroupForm">
+                    <!-- Group Image Upload -->
+                    <div class="group-image-section">
+                        <div class="group-image-upload" id="groupImageUpload">
+                            <div class="upload-placeholder" id="uploadPlaceholder">
+                                <i class="bi bi-camera"></i>
+                                <p>Grup fotoğrafı</p>
+                            </div>
+                            <img id="groupImagePreview" class="group-image-preview d-none" alt="Grup fotoğrafı">
+                        </div>
+                        <input type="file" id="groupImageInput" accept="image/*" style="display: none;">
+                    </div>
+
+                    <!-- Group Name -->
+                    <div class="form-section">
+                        <label for="groupName">
+                            <i class="bi bi-chat-text"></i>
+                            Grup Adı <span class="required-star">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="groupName" name="groupName" 
+                               placeholder="Arkadaş Grubu, Çalışma Ekibi..." maxlength="100" required>
+                        <div class="form-text">3-100 karakter arasında olmalıdır</div>
+                    </div>
+
+                    <!-- Group Description -->
+                    <div class="form-section">
+                        <label for="groupDescription">
+                            <i class="bi bi-card-text"></i>
+                            Grup Açıklaması
+                        </label>
+                        <textarea class="form-control" id="groupDescription" name="groupDescription" 
+                                  rows="3" placeholder="Bu grup nedir? Hangi amaçla oluşturuldu? (Opsiyonel)" maxlength="500"></textarea>
+                        <div class="form-text">Maksimum 500 karakter</div>
+                    </div>
+
+                    <!-- Member Selection (Redesigned) -->
+                    <div class="form-section">
+                        <label class="d-flex align-items-center gap-2">
+                            <i class="bi bi-people"></i>
+                            <span>Grup Üyeleri</span>
+                            <span class="help-inline">(En az 1, maksimum 256)</span>
+                        </label>
+
+                        <div class="member-picker-wrapper">
+                            <div class="member-picker-head">
+                                <h5><i class="bi bi-person-add"></i> Üye Seçimi</h5>
+                                <span class="count" id="memberCountBadge">0 / 256</span>
+                            </div>
+                            <div class="member-picker-grid">
+                                <!-- Sol Panel: Arama Sonuçları -->
+                                <div class="member-panel">
+                                    <div class="member-panel-title"><i class="bi bi-search"></i> Arama</div>
+                                    <div class="member-search-box mb-2">
+                                        <i class="bi bi-search"></i>
+                                        <input type="text" id="userSearch" class="form-control" placeholder="Kullanıcı adı veya ad..." autocomplete="off" />
+                                    </div>
+                                    <div class="member-results empty" id="userSelection">
+                                        <div class="member-empty" id="userSelectionEmpty">
+                                            Arama terimi girin (en az 2 karakter)
+                                        </div>
+                                    </div>
+                                    <div class="member-foot-note">
+                                        <span class="help-inline">Seçmek için kullanıcıya tıklayın</span>
+                                        <span class="help-inline">Arama otomatik yapılır</span>
+                                    </div>
+                                </div>
+                                <!-- Sağ Panel: Seçilenler -->
+                                <div class="member-panel">
+                                    <div class="member-panel-title"><i class="bi bi-check2-circle"></i> Seçilen Üyeler</div>
+                                    <div class="member-selected empty" id="selectedUsers">
+                                        <div class="member-empty" id="selectedUsersEmpty">Henüz üye seçilmedi</div>
+                                    </div>
+                                    <div class="member-foot-note">
+                                        <span class="help-inline">Çok fazla üye eklemeyin</span>
+                                        <span class="help-inline limit-warning d-none" id="limitWarning">Limit doldu</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Privacy Settings -->
+                    <div class="form-section">
+                        <label>
+                            <i class="bi bi-shield-lock"></i>
+                            Grup Ayarları
+                        </label>
+                        <div class="privacy-section">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="groupPrivate">
+                                <label class="form-check-label" for="groupPrivate">
+                                    <strong>Özel Grup</strong>
+                                    <small>Sadece davet ile katılım sağlanabilir</small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="action-buttons">
+                        <a href="/Chat" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i>
+                            İptal Et
+                        </a>
+                        <button type="submit" class="btn btn-primary" id="createGroupBtn">
+                            <i class="bi bi-people-fill"></i>
+                            Grubu Oluştur
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script src="/js/group-create.js"></script>
+<script>
+    window.__currentUser = '@ViewBag.Username';
+    window.__currentUserDisplayName = '@ViewBag.DisplayName';
+    window.__currentUserProfileImage = '@ViewBag.ProfileImageUrl';
+</script>
+}

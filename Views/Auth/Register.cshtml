@@ -1,0 +1,223 @@
+@{
+    ViewData["Title"] = "Kayıt Ol - ChatApp";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 2rem 0;
+        }
+        
+        .register-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .register-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .register-header h1 {
+            color: #333;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .register-header p {
+            color: #666;
+            margin-bottom: 0;
+        }
+        
+        .form-floating {
+            margin-bottom: 1rem;
+        }
+        
+        .form-floating > label {
+            color: #666;
+        }
+        
+        .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .btn-register {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            color: white;
+        }
+        
+        .login-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .login-link a:hover {
+            color: #764ba2;
+        }
+        
+        .alert {
+            border-radius: 12px;
+            border: none;
+            margin-bottom: 1.5rem;
+        }
+        
+        .password-match {
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        
+        .password-match.valid {
+            color: #198754;
+        }
+        
+        .password-match.invalid {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-header">
+            <h1><i class="fas fa-user-plus"></i> ChatApp</h1>
+            <p>Yeni hesap oluşturun</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+        {
+            <div class="alert alert-danger" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                @ViewBag.ErrorMessage
+            </div>
+        }
+
+        <form method="post" action="/Auth/Register" id="registerForm">
+            <div class="form-floating">
+                <input type="text" class="form-control" id="username" name="username" placeholder="Kullanıcı Adı" required minlength="3">
+                <label for="username"><i class="fas fa-user me-2"></i>Kullanıcı Adı</label>
+            </div>
+
+            <div class="form-floating">
+                <input type="email" class="form-control" id="email" name="email" placeholder="E-posta" required>
+                <label for="email"><i class="fas fa-envelope me-2"></i>E-posta</label>
+            </div>
+
+            <div class="form-floating">
+                <input type="text" class="form-control" id="displayName" name="displayName" placeholder="Görünür Ad">
+                <label for="displayName"><i class="fas fa-id-badge me-2"></i>Görünür Ad (İsteğe bağlı)</label>
+            </div>
+
+            <div class="form-floating">
+                <input type="password" class="form-control" id="password" name="password" placeholder="Şifre" required minlength="6">
+                <label for="password"><i class="fas fa-lock me-2"></i>Şifre (En az 6 karakter)</label>
+            </div>
+
+            <div class="form-floating">
+                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="Şifre Tekrar" required>
+                <label for="confirmPassword"><i class="fas fa-lock me-2"></i>Şifre Tekrar</label>
+                <div id="passwordMatch" class="password-match" style="display: none;"></div>
+            </div>
+
+            <button type="submit" class="btn btn-register" id="registerBtn">
+                <i class="fas fa-user-plus me-2"></i>Kayıt Ol
+            </button>
+        </form>
+
+        <div class="login-link">
+            <p class="mb-0">Zaten hesabınız var mı? <a href="/Auth/Login">Giriş yapın</a></p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const password = document.getElementById('password');
+            const confirmPassword = document.getElementById('confirmPassword');
+            const passwordMatch = document.getElementById('passwordMatch');
+            const registerBtn = document.getElementById('registerBtn');
+
+            function checkPasswordMatch() {
+                const pwd = password.value;
+                const confirmPwd = confirmPassword.value;
+
+                if (confirmPwd.length === 0) {
+                    passwordMatch.style.display = 'none';
+                    return;
+                }
+
+                passwordMatch.style.display = 'block';
+
+                if (pwd === confirmPwd) {
+                    passwordMatch.textContent = '✓ Şifreler eşleşiyor';
+                    passwordMatch.className = 'password-match valid';
+                    registerBtn.disabled = false;
+                } else {
+                    passwordMatch.textContent = '✗ Şifreler eşleşmiyor';
+                    passwordMatch.className = 'password-match invalid';
+                    registerBtn.disabled = true;
+                }
+            }
+
+            password.addEventListener('input', checkPasswordMatch);
+            confirmPassword.addEventListener('input', checkPasswordMatch);
+
+            // Display Name otomatik doldurma
+            document.getElementById('username').addEventListener('input', function(e) {
+                const displayNameField = document.getElementById('displayName');
+                if (displayNameField.value === '') {
+                    displayNameField.value = e.target.value;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

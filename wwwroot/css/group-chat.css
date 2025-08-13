@@ -1,0 +1,503 @@
+/* Group Chat Specific Styles */
+
+.group-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom: none;
+}
+
+.group-header .btn-icon {
+    color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.group-header .btn-icon:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.group-avatar {
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.group-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.group-name {
+    color: white;
+    font-weight: 600;
+}
+
+.group-description {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.85rem;
+}
+
+.group-member-count {
+    font-size: 0.75rem;
+    background: rgba(255, 255, 255, 0.2) !important;
+}
+
+.group-composer {
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+}
+
+.group-composer .composer-input {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+}
+
+.group-composer .composer-input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+/* Group Message Styles */
+.group-message {
+    margin-bottom: 12px;
+}
+
+.group-message .avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+}
+
+.group-message .bubble {
+    max-width: 70%;
+}
+
+.group-message.mine .bubble {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.group-message.mine .bubble .meta {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.group-message .sender-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 2px;
+    color: var(--primary);
+}
+
+.group-message.mine .sender-name {
+    display: none; /* Don't show sender name for own messages */
+}
+
+/* Member List Styles */
+.member-item {
+    transition: background-color 0.2s;
+    border: 1px solid transparent;
+}
+
+.member-item:hover {
+    background: var(--surface-2);
+    border-color: var(--border);
+}
+
+.member-item .avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+}
+
+.member-actions .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+/* Group Welcome Message */
+#groupWelcome {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    margin: 20px 0;
+}
+
+/* Group Settings Modal */
+.modal-content {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--border);
+}
+
+.modal-footer {
+    border-top: 1px solid var(--border);
+}
+
+/* Group Creation Form */
+.group-form {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+/* Group Form Styles - Improved Design */
+.group-form {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.group-form .form-label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+.group-form .form-control {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    color: #2c3e50;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.group-form .form-control:focus {
+    background: #ffffff;
+    border-color: #667eea;
+    color: #2c3e50;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+    outline: none;
+}
+
+.group-form .form-control::placeholder {
+    color: #6c757d;
+    opacity: 0.8;
+}
+
+.group-form .form-text {
+    color: #6c757d;
+    font-size: 0.85rem;
+    margin-top: 4px;
+}
+
+.group-image-upload {
+    border: 3px dashed #dee2e6;
+    border-radius: 12px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+}
+
+.group-image-upload:hover {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.08);
+    transform: translateY(-2px);
+}
+
+.group-image-upload.has-image {
+    border-style: solid;
+    border-color: #667eea;
+    padding: 15px;
+    background: #ffffff;
+}
+
+.group-image-upload .text-muted {
+    color: #6c757d !important;
+}
+
+.group-image-upload i {
+    color: #adb5bd !important;
+}
+
+.group-image-preview {
+    max-width: 120px;
+    height: 120px;
+    border-radius: 12px;
+    object-fit: cover;
+    margin: 0 auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* User Selection for Group - Improved Design */
+.user-selection {
+    max-height: 320px;
+    overflow-y: auto;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 15px;
+    background: #ffffff;
+}
+
+.user-selection::-webkit-scrollbar {
+    width: 6px;
+}
+
+.user-selection::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.user-selection::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.user-selection::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+.user-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+    margin-bottom: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.user-item:hover {
+    background: #e7f3ff;
+    border-color: #667eea;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.user-item.selected {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.user-item.selected .text-muted {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.user-item .form-check-input {
+    margin-right: 12px;
+    transform: scale(1.2);
+}
+
+.user-item .avatar {
+    width: 40px;
+    height: 40px;
+    margin-right: 12px;
+    border: 2px solid #e9ecef;
+}
+
+.user-item.selected .avatar {
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.user-item .user-info h6 {
+    margin: 0;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #2c3e50;
+}
+
+.user-item.selected .user-info h6 {
+    color: white;
+}
+
+.user-item .user-info small {
+    color: #6c757d;
+    font-size: 0.8rem;
+}
+
+/* Form Buttons - Improved Design */
+.group-form .btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.group-form .btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.group-form .btn-primary:hover {
+    background: linear-gradient(135deg, #5a6fd8, #6a4190);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.group-form .btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.group-form .btn-secondary:hover {
+    background: #5a6268;
+    transform: translateY(-1px);
+}
+
+/* Card Improvements */
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.card-header {
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+    border: none;
+    padding: 20px;
+}
+
+.card-header h5 {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+.card-body {
+    padding: 30px;
+    background: #ffffff;
+}
+
+/* Privacy Toggle */
+.form-check {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    margin-bottom: 20px;
+}
+
+.form-check-input:checked {
+    background-color: #667eea;
+    border-color: #667eea;
+}
+
+.form-check-label {
+    font-weight: 500;
+    color: #2c3e50;
+    cursor: pointer;
+}
+
+/* Selected Users Display */
+.selected-users {
+    background: #f1f3f5;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 15px;
+    min-height: 60px;
+}
+
+.selected-user-badge {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    margin: 3px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.selected-user-badge .remove-user {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    margin-left: 8px;
+    padding: 0;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.selected-user-badge .remove-user:hover {
+    color: white;
+}
+}
+
+.user-item .avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+    margin-right: 10px;
+}
+
+.selected-users {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.selected-user-badge {
+    background: #667eea;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.selected-user-badge .remove-user {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 0;
+    font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .group-header {
+        padding: 10px;
+    }
+    
+    .group-header .group-name {
+        font-size: 1rem;
+    }
+    
+    .group-header .btn-icon {
+        padding: 6px;
+    }
+    
+    .group-message .bubble {
+        max-width: 85%;
+    }
+}
+
+/* Dark theme adjustments */
+@media (prefers-color-scheme: dark) {
+    .group-header {
+        background: linear-gradient(135deg, #4c63d2 0%, #5a4b92 100%);
+    }
+    
+    .member-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .user-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+}

@@ -1,0 +1,271 @@
+@model ChatApp.Models.ChatMessage
+@{
+        ViewData["Title"] = "Genel Sohbet";
+        Layout = "_Layout";
+}
+
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <div class="col-12 conversation" style="height:75vh; max-height:600px;">
+            <div class="conv-header">
+                <div class="avatar">G</div>
+                <div class="flex-grow-1">
+                    <div class="d-flex align-items-center gap-2">
+                        <h6 class="mb-0">Genel Sohbet</h6>
+                        <span class="status-badge" id="connectionStatus">Bağlanıyor...</span>
+                    </div>
+                    <small class="text-dim">Aktif kullanıcılar: <span id="userCount">0</span></small>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="/Chat/Private" class="btn btn-sm btn-outline-secondary">Özel</a>
+                    <a href="/Chat" class="btn btn-sm btn-outline-secondary"><i class="bi bi-house"></i></a>
+                </div>
+            </div>
+            <div class="messages-scroll scroll-area" id="chatMessages" aria-label="Genel Mesajlar">
+                <div class="date-divider"><span>Bugün</span></div>
+                <div class="system-msg text-center text-dim small">Genel sohbet başlıyor...</div>
+            </div>
+            <div class="composer">
+                <div class="composer-row">
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="btn-icon" id="btnReloadPublic" data-bs-toggle="tooltip" title="Yenile"><i class="bi bi-arrow-clockwise"></i></button>
+                        <button class="btn-icon" id="btnImageUpload" data-bs-toggle="tooltip" title="Fotoğraf Yükle"><i class="bi bi-image"></i></button>
+                        <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                    </div>
+                    <textarea id="messageInput" class="composer-input" rows="1" placeholder="Herkese mesaj yaz..." maxlength="500" disabled></textarea>
+                    <button class="btn-send" id="sendButton" disabled><i class="bi bi-send"></i></button>
+                </div>
+                <div class="d-flex justify-content-between px-1">
+                    <small class="text-dim" id="publicHint">Bağlantı bekleniyor...</small>
+                    <small class="text-dim"><span id="charCountPub">0</span>/500</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+// SignalR Connection
+const connection = new signalR.HubConnectionBuilder().withUrl('/chathub').build();
+// DOM Elements
+const messageInput = document.getElementById('messageInput');
+const sendButton = document.getElementById('sendButton');
+const chatMessages = document.getElementById('chatMessages');
+const connectionStatus = document.getElementById('connectionStatus');
+const userCount = document.getElementById('userCount');
+const publicHint = document.getElementById('publicHint');
+const charCountPub = document.getElementById('charCountPub');
+const btnReloadPublic = document.getElementById('btnReloadPublic');
+const btnImageUpload = document.getElementById('btnImageUpload');
+const imageInput = document.getElementById('imageInput');
+
+let currentUser = '@ViewBag.Username' || '';
+let activeUsers = new Set();
+let connectionRetryCount = 0; const maxRetries = 3; let isReconnecting = false;
+
+async function startConnection(){
+    if(isReconnecting) return; isReconnecting=true;
+    try { await connection.start();
+        connectionStatus.textContent='Bağlandı';
+        connectionStatus.classList.remove('offline-status');
+        connectionStatus.classList.add('online-status');
+        connectionRetryCount=0; isReconnecting=false;
+        if(currentUser){ activeUsers.add(currentUser); updateUserCount(); loadPublicMessages(); publicHint.textContent='Mesaj yazabilirsiniz'; messageInput.disabled=false; sendButton.disabled=false; }
+    } catch(err){
+        connectionStatus.textContent='Bağlantı hatası'; console.error(err);
+        if(connectionRetryCount<maxRetries){ connectionRetryCount++; const delay=Math.min(2000*connectionRetryCount,8000); setTimeout(()=>{isReconnecting=false; startConnection();},delay); } else { isReconnecting=false; publicHint.textContent='Bağlantı başarısız'; }
+    }
+}
+connection.onclose(()=>{ if(!isReconnecting){ connectionStatus.textContent='Kesildi'; messageInput.disabled=true; sendButton.disabled=true; startConnection(); }});
+startConnection();
+
+btnReloadPublic?.addEventListener('click',()=>{ chatMessages.innerHTML='<div class="system-msg text-center text-dim small">Yeniden yükleniyor...</div>'; loadPublicMessages(true); });
+
+async function loadPublicMessages(force){
+    try { const r=await fetch('/Chat/GetPublicMessages'+(force?'?t='+(Date.now()):'')); const data=await r.json();
+        if(data.success && Array.isArray(data.messages)){ chatMessages.innerHTML='<div class="date-divider"><span>Bugün</span></div>'; data.messages.forEach(m=> addPublicMessage(m.from,m.message,new Date(m.timestamp),m.profileImageUrl)); }
+    } catch(e){ console.error('Load public fail',e); }
+}
+
+function updateUserCount(){ userCount.textContent=activeUsers.size; }
+function updateSendButtonState(){ sendButton.disabled = !(currentUser && messageInput.value.trim()); }
+
+messageInput.addEventListener('input',()=>{ updateSendButtonState(); charCountPub.textContent=messageInput.value.length; autoGrow(messageInput); });
+messageInput.addEventListener('keypress',e=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); if(!sendButton.disabled) sendMessage(); } });
+sendButton.addEventListener('click',sendMessage);
+
+// Image upload functionality
+btnImageUpload?.addEventListener('click', () => {
+    imageInput.click();
+});
+
+imageInput?.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+        alert('Lütfen sadece resim dosyaları seçin.');
+        return;
+    }
+    
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+        alert('Dosya boyutu çok büyük. Maksimum 5MB olabilir.');
+        return;
+    }
+    
+    try {
+        const formData = new FormData();
+        formData.append('image', file);
+        
+        btnImageUpload.disabled = true;
+        btnImageUpload.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+        
+        const response = await fetch('/Chat/UploadImage', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Send image message via SignalR
+            await connection.invoke('SendBroadcastMessage', currentUser, `[RESIM:${result.imageUrl}]`);
+        } else {
+            alert('Resim yüklenirken hata oluştu: ' + result.message);
+        }
+    } catch (error) {
+        console.error('Image upload error:', error);
+        alert('Resim yüklenirken hata oluştu.');
+    } finally {
+        btnImageUpload.disabled = false;
+        btnImageUpload.innerHTML = '<i class="bi bi-image"></i>';
+        imageInput.value = '';
+    }
+});
+
+function sendMessage(){ const txt=messageInput.value.trim(); if(!txt) return; if(connection.state!==signalR.HubConnectionState.Connected){ publicHint.textContent='Bağlantı yok'; return; }
+    connection.invoke('SendBroadcastMessage', currentUser, txt).catch(err=>{ console.error(err); publicHint.textContent='Gönderilemedi'; });
+    messageInput.value=''; charCountPub.textContent='0'; updateSendButtonState(); autoGrow(messageInput,true);
+}
+
+function addPublicMessage(from,message,timestamp,profileImageUrl){ const isOwn= from===currentUser; const group=document.createElement('div'); group.className='message-group '+(isOwn?'mine':'');
+    const initial = from?from.charAt(0).toUpperCase():'?';
+    const avatarImg = profileImageUrl ? `<img src="${profileImageUrl}" alt="${from}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : '';
+    const avatar = `<div class="avatar">${avatarImg}<span style="display:${profileImageUrl ? 'none' : 'flex'}">${initial}</span></div>`;
+    const timeStr = (timestamp? new Date(timestamp): new Date()).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+    const bubbleClass = isOwn? 'bubble bubble--me':'bubble';
+    const editBtn = isOwn ? `<button class="btn-edit" onclick="editMessage(this)" title="Düzenle">⋯</button>` : '';
+    
+    // Check if message is an image
+    let messageContent;
+    if (message.startsWith('[RESIM:') && message.endsWith(']')) {
+        const imageUrl = message.slice(7, -1); // Extract URL from [RESIM:url]
+        messageContent = `<img src="${imageUrl}" alt="Paylaşılan resim" style="max-width: 300px; max-height: 300px; border-radius: 8px; cursor: pointer;" onclick="window.open('${imageUrl}', '_blank')">`;
+    } else {
+        messageContent = `<span class="message-text">${escapeHtml(message)}</span>`;
+    }
+    
+    group.innerHTML = avatar+`<div class="bubble-stack"><div class="${bubbleClass}" data-message-id="${Date.now()}">${messageContent}${editBtn}<small class="meta">${timeStr}</small></div></div>`;
+    chatMessages.appendChild(group); chatMessages.scrollTop=chatMessages.scrollHeight;
+    if(!activeUsers.has(from)){ activeUsers.add(from); updateUserCount(); }
+}
+function escapeHtml(str){ return str.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m])); }
+
+// Edit message functionality
+function editMessage(editBtn) {
+    const bubble = editBtn.closest('.bubble');
+    const messageTextSpan = bubble.querySelector('.message-text');
+    const originalText = messageTextSpan.textContent;
+    
+    // Create edit input
+    const editInput = document.createElement('input');
+    editInput.type = 'text';
+    editInput.value = originalText;
+    editInput.className = 'edit-input';
+    editInput.style.cssText = 'width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 8px; margin: 4px 0; font-size: 14px;';
+    
+    // Create save/cancel buttons
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.cssText = 'display: flex; gap: 5px; margin-top: 5px;';
+    
+    const saveBtn = document.createElement('button');
+    saveBtn.textContent = 'Kaydet';
+    saveBtn.className = 'btn btn-sm btn-primary';
+    saveBtn.style.cssText = 'font-size: 11px; padding: 2px 8px;';
+    
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'İptal';
+    cancelBtn.className = 'btn btn-sm btn-secondary';
+    cancelBtn.style.cssText = 'font-size: 11px; padding: 2px 8px;';
+    
+    buttonContainer.appendChild(saveBtn);
+    buttonContainer.appendChild(cancelBtn);
+    
+    // Replace message content with edit interface
+    const originalContent = messageTextSpan.innerHTML;
+    messageTextSpan.innerHTML = '';
+    messageTextSpan.appendChild(editInput);
+    messageTextSpan.appendChild(buttonContainer);
+    
+    // Hide edit button during editing
+    editBtn.style.display = 'none';
+    
+    // Focus on input
+    editInput.focus();
+    editInput.select();
+    
+    // Save functionality
+    function saveEdit() {
+        const newText = editInput.value.trim();
+        if (newText && newText !== originalText) {
+            // Check if bubble already has edit indicator
+            let editIndicator = bubble.querySelector('.edit-indicator');
+            if (!editIndicator) {
+                editIndicator = document.createElement('small');
+                editIndicator.className = 'edit-indicator text-muted';
+                editIndicator.style.cssText = 'font-size: 10px; margin-left: 8px; opacity: 0.7;';
+                editIndicator.textContent = '(düzenlendi)';
+            }
+            
+            messageTextSpan.innerHTML = escapeHtml(newText);
+            messageTextSpan.appendChild(editIndicator);
+            // Here you would typically send the edit to the server
+            // connection.invoke("EditMessage", messageId, newText);
+        } else {
+            messageTextSpan.innerHTML = originalContent;
+        }
+        editBtn.style.display = 'inline-block';
+    }
+    
+    // Cancel functionality
+    function cancelEdit() {
+        messageTextSpan.innerHTML = originalContent;
+        editBtn.style.display = 'inline-block';
+    }
+    
+    // Event listeners
+    saveBtn.addEventListener('click', saveEdit);
+    cancelBtn.addEventListener('click', cancelEdit);
+    
+    // Enter to save, Escape to cancel
+    editInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            saveEdit();
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            cancelEdit();
+        }
+    });
+}
+function autoGrow(el,reset){ if(reset){ el.style.height='auto'; return;} el.style.height='auto'; el.style.height=(el.scrollHeight)+'px'; }
+
+connection.on('ReceiveBroadcast',(from,message,timestamp,profileImageUrl)=>{ addPublicMessage(from,message,new Date(timestamp),profileImageUrl); });
+connection.on('SystemMessage',(msg)=>{ const div=document.createElement('div'); div.className='system-msg text-center text-dim small'; div.textContent=msg; chatMessages.appendChild(div); chatMessages.scrollTop=chatMessages.scrollHeight; });
+
+window.addEventListener('beforeunload',()=>{ if(currentUser){ activeUsers.delete(currentUser); }});
+</script>
+}

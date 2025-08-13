@@ -1,0 +1,97 @@
+@model ChatApp.Models.ChatMessage
+@{
+        ViewData["Title"] = "Özel Mesajlaşma";
+        Layout = "_Layout";
+}
+
+@section Styles {
+<link rel="stylesheet" href="/css/chat-modern.css" />
+}
+
+<div class="container-fluid p-0 chat-modern" style="height:75vh; max-height:600px;">
+    <div class="row g-0 h-100">
+        <!-- Sidebar -->
+        <aside class="col-2 sidebar" id="privateSidebar">
+            <div class="sidebar-header d-flex align-items-center justify-content-between">
+                <h6 class="m-0 brand-gradient">Sohbetler</h6>
+                <button class="btn btn-sm btn-outline-light" id="btnNewChat" title="Yeni Özel Sohbet" data-bs-toggle="tooltip"><i class="bi bi-plus-lg"></i></button>
+            </div>
+            <div class="px-3 pt-2 pb-1">
+                <div class="input-group input-group-sm mb-2">
+                    <span class="input-group-text bg-transparent border-end-0 text-dim"><i class="bi bi-search"></i></span>
+                    <input id="chatSearch" type="text" class="form-control border-start-0" placeholder="Ara..." />
+                </div>
+            </div>
+            <div id="conversationList" class="scroll-area" style="flex:1;">
+                <div class="text-center text-dim small py-4" id="convEmpty">Henüz özel sohbet yok</div>
+            </div>
+        </aside>
+
+        <!-- Conversation -->
+        <main class="col-10 conversation" id="convo-col">
+            <!-- Welcome State -->
+            <div id="welcomeState" class="d-flex flex-column align-items-center justify-content-center h-100 text-center">
+                <div class="mb-4">
+                    <i class="bi bi-chat-dots" style="font-size: 4rem; color: var(--text-dim);"></i>
+                </div>
+                <h4 class="mb-2">Bir kullanıcı seçin ve sohbete başlayın</h4>
+                <p class="text-dim mb-4">Sol menüden mevcut sohbetlerinizi seçin veya yeni bir sohbet başlatın</p>
+                <button class="btn btn-outline-primary" id="startNewChatBtn">
+                    <i class="bi bi-plus-lg me-2"></i>Yeni Sohbet Başlat
+                </button>
+            </div>
+
+            <!-- Chat Interface (hidden by default) -->
+            <div id="chatInterface" class="d-none h-100 d-flex flex-column">
+                <div class="conv-header" id="convHeader">
+                    <div class="avatar" id="headerAvatar">?</div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center gap-2">
+                            <h6 class="mb-0" id="headerName">Kullanıcı Seçin</h6>
+                            <span class="status-badge" id="headerStatus">Offline</span>
+                            <span class="badge text-bg-secondary d-none" id="pinnedBadge">Pinned</span>
+                        </div>
+                        <small class="text-dim" id="headerSub">Beklemede…</small>
+                    </div>
+                    <div class="d-flex align-items-center gap-1">
+                        <button class="btn btn-sm text-dim" data-bs-toggle="tooltip" title="Ara"><i class="bi bi-search"></i></button>
+                        <button class="btn btn-sm text-dim" data-bs-toggle="tooltip" id="toggleDetails" title="Detay Paneli"><i class="bi bi-layout-sidebar-reverse"></i></button>
+                        <button class="btn btn-sm text-dim" data-bs-toggle="tooltip" title="Sessize Al" id="muteChat"><i class="bi bi-bell"></i></button>
+                        <button class="btn btn-sm text-dim" data-bs-toggle="tooltip" title="Sabitle" id="pinChat"><i class="bi bi-pin-angle"></i></button>
+                        <button class="btn btn-sm text-dim" data-bs-toggle="tooltip" title="Sohbeti Kapat" id="closeChatBtn"><i class="bi bi-x-lg"></i></button>
+                    </div>
+                </div>
+                <div class="messages-wrapper flex-1">
+                    <div class="messages-scroll scroll-area" id="messagesArea" aria-label="Mesajlar">
+                        <div class="date-divider"><span id="todayDivider">Bugün</span></div>
+                        <div class="system-msg text-center text-dim small" id="systemInit">Mesajlar yükleniyor...</div>
+                    </div>
+                </div>
+                <div class="composer" aria-label="Mesaj Yazma">
+                    <div class="composer-row">
+                        <div class="d-flex align-items-center gap-2">
+                            <button class="btn-icon" data-bs-toggle="tooltip" title="Emoji"><i class="bi bi-emoji-smile"></i></button>
+                            <button class="btn-icon" data-bs-toggle="tooltip" title="GIF"><i class="bi bi-filetype-gif"></i></button>
+                            <button class="btn-icon" data-bs-toggle="tooltip" title="Dosya"><i class="bi bi-paperclip"></i></button>
+                            <button class="btn-icon" data-bs-toggle="tooltip" title="Ses"><i class="bi bi-mic"></i></button>
+                        </div>
+                        <textarea id="messageInput" class="composer-input" rows="1" placeholder="Mesaj yaz... (Shift+Enter yeni satır)" disabled></textarea>
+                        <button class="btn-send" id="sendButton" disabled><i class="bi bi-send"></i></button>
+                    </div>
+                    <div class="d-flex justify-content-between px-1">
+                        <small class="text-dim" id="composerHint">Önce kullanıcı seç</small>
+                        <small class="text-dim"><span id="charCount">0</span>/500</small>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Details Panel -->
+        @section Scripts {
+        <script src="/js/private-chat.js"></script>
+        <script>
+            window.__currentUser='@ViewBag.Username';
+            window.__currentUserDisplayName='@ViewBag.DisplayName';
+            window.__currentUserProfileImage='@ViewBag.ProfileImageUrl';
+        </script>
+        }

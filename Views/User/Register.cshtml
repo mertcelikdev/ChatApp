@@ -1,0 +1,222 @@
+@{
+    ViewData["Title"] = "Kayıt Ol";
+    Layout = "_Layout";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card mt-5">
+            <div class="card-header bg-success text-white text-center">
+                <h3><i class="fas fa-user-plus"></i> ChatApp'e Kayıt Ol</h3>
+            </div>
+            <div class="card-body">
+                <form id="registerForm">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">
+                            <i class="fas fa-user"></i> Kullanıcı Adı:
+                        </label>
+                        <input type="text" class="form-control" id="username" placeholder="Kullanıcı adınızı girin" required maxlength="20" minlength="3">
+                        <div class="form-text">3-20 karakter arası olmalıdır</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">
+                            <i class="fas fa-envelope"></i> E-posta:
+                        </label>
+                        <input type="email" class="form-control" id="email" placeholder="E-posta adresinizi girin" required>
+                        <div class="form-text">Geçerli bir e-posta adresi girin</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">
+                            <i class="fas fa-lock"></i> Şifre:
+                        </label>
+                        <input type="password" class="form-control" id="password" placeholder="Şifrenizi girin" required minlength="6">
+                        <div class="form-text">En az 6 karakter olmalıdır</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">
+                            <i class="fas fa-lock"></i> Şifre Tekrar:
+                        </label>
+                        <input type="password" class="form-control" id="confirmPassword" placeholder="Şifrenizi tekrar girin" required minlength="6">
+                        <div class="form-text">Şifrenizi tekrar girin</div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success btn-lg" id="registerButton">
+                            <i class="fas fa-user-plus"></i> Kayıt Ol
+                        </button>
+                    </div>
+                </form>
+
+                <div id="registerStatus" class="mt-3"></div>
+
+                <div class="text-center mt-4">
+                    <hr>
+                    <p class="mb-2">Zaten hesabınız var mı?</p>
+                    <a href="/User/Login" class="btn btn-outline-primary">
+                        <i class="fas fa-sign-in-alt"></i> Giriş Yap
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Card -->
+        <div class="card mt-3">
+            <div class="card-body">
+                <h6><i class="fas fa-info-circle text-info"></i> Kayıt Kuralları</h6>
+                <ul class="small mb-0">
+                    <li>Kullanıcı adı 3-20 karakter arası olmalıdır</li>
+                    <li>Geçerli bir e-posta adresi gereklidir</li>
+                    <li>Şifre en az 6 karakter olmalıdır</li>
+                    <li>Kullanıcı adı benzersiz olmalıdır</li>
+                </ul>
+                
+                <hr>
+                
+                <h6><i class="fas fa-rocket text-primary"></i> ChatApp Özellikleri</h6>
+                <div class="row">
+                    <div class="col-6">
+                        <small><i class="fas fa-user-friends text-primary"></i> Özel Mesajlaşma</small>
+                    </div>
+                    <div class="col-6">
+                        <small><i class="fas fa-users text-success"></i> Genel Sohbet</small>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-6">
+                        <small><i class="fas fa-bolt text-warning"></i> Anlık İletişim</small>
+                    </div>
+                    <div class="col-6">
+                        <small><i class="fas fa-database text-info"></i> PostgreSQL</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+// Kullanıcı zaten giriş yapmışsa chat sayfasına yönlendir
+window.addEventListener('DOMContentLoaded', function() {
+    const savedUsername = localStorage.getItem('chatapp_username');
+    const loginTime = localStorage.getItem('chatapp_login_time');
+    
+    if (savedUsername && loginTime) {
+        const loginDate = new Date(loginTime);
+        const now = new Date();
+        const hoursDiff = (now - loginDate) / (1000 * 60 * 60);
+        
+        if (hoursDiff < 24) {
+            console.log(`Kullanıcı ${savedUsername} zaten giriş yapmış. Chat sayfasına yönlendiriliyor...`);
+            showStatus(`Hoş geldin ${savedUsername}! Chat sayfasına yönlendiriliyorsun...`, 'success');
+            setTimeout(() => {
+                window.location.href = '/Chat';
+            }, 1000);
+            return;
+        } else {
+            localStorage.removeItem('chatapp_username');
+            localStorage.removeItem('chatapp_login_time');
+        }
+    }
+});
+
+// Register form
+document.getElementById('registerForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const username = document.getElementById('username').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    // Validation
+    if (!username || !email || !password || !confirmPassword) {
+        showStatus('Tüm alanları doldurun', 'warning');
+        return;
+    }
+
+    if (username.length < 3 || username.length > 20) {
+        showStatus('Kullanıcı adı 3-20 karakter arası olmalıdır', 'warning');
+        return;
+    }
+
+    if (password.length < 6) {
+        showStatus('Şifre en az 6 karakter olmalıdır', 'warning');
+        return;
+    }
+
+    if (password !== confirmPassword) {
+        showStatus('Şifreler eşleşmiyor', 'warning');
+        return;
+    }
+
+    // E-posta basit kontrol
+    if (email.length < 5) {
+        showStatus('Geçerli bir e-posta adresi girin', 'warning');
+        return;
+    }
+
+    const registerButton = document.getElementById('registerButton');
+    registerButton.disabled = true;
+    registerButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kayıt oluşturuluyor...';
+
+    try {
+        const response = await fetch('/api/userapi/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                username: username,
+                email: email,
+                password: password
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showStatus(`✅ Kayıt başarılı! Hoş geldin ${username}!`, 'success');
+            
+            // Otomatik giriş yap
+            localStorage.setItem('chatapp_username', username);
+            localStorage.setItem('chatapp_login_time', new Date().toISOString());
+            
+            setTimeout(() => {
+                window.location.href = '/Chat';
+            }, 1500);
+        } else {
+            showStatus(`❌ ${result.message}`, 'danger');
+        }
+    } catch (error) {
+        showStatus('❌ Kayıt olurken hata oluştu', 'danger');
+        console.error('Register error:', error);
+    } finally {
+        registerButton.disabled = false;
+        registerButton.innerHTML = '<i class="fas fa-user-plus"></i> Kayıt Ol';
+    }
+});
+
+// Status mesajı gösterme
+function showStatus(message, type) {
+    const statusDiv = document.getElementById('registerStatus');
+    statusDiv.innerHTML = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    // 5 saniye sonra otomatik kapat
+    setTimeout(() => {
+        const alertDiv = statusDiv.querySelector('.alert');
+        if (alertDiv && alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+</script>
+}

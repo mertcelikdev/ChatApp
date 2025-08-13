@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - ChatApp</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/dark-theme.css" rel="stylesheet" />
+    <link href="/css/chat-modern.css" rel="stylesheet" />
+    @await RenderSectionAsync("Styles", required: false)
+    <style></style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="/Chat">
+                <span class="d-inline-flex justify-content-center align-items-center rounded-circle" style="width:36px;height:36px;background:rgba(255,255,255,.1);backdrop-filter:blur(4px);"><i class="fas fa-comments"></i></span>
+                <span>ChatApp</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto"></ul>
+                <div class="navbar-nav">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <span class="navbar-text me-3 text-uppercase small text-white-50 d-none d-md-inline">Realtime</span>
+                    }
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <div class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-white d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                @if (!string.IsNullOrEmpty(ViewBag.ProfileImageUrl as string))
+                                {
+                                    <img src="@ViewBag.ProfileImageUrl" alt="Profil" class="rounded-circle profile-image me-2" 
+                                         width="28" height="28" style="object-fit: cover; border: 2px solid #fff;">
+                                }
+                                else
+                                {
+                                    <i class="fas fa-user-circle me-2"></i>
+                                }
+                                @User.Identity.Name
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" href="/Profile"><i class="fas fa-user-edit me-2"></i>Profil</a></li>
+                                @if (User.HasClaim("Role","Admin")) {<li><a class="dropdown-item" href="/Admin"><i class="fas fa-shield-halved me-2"></i>Admin</a></li>}
+                                <li><hr class="dropdown-divider"/></li>
+                                <li><a class="dropdown-item" href="#" onclick="performLogout(event)"><i class="fas fa-right-from-bracket me-2"></i>Çıkış</a></li>
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <a href="/Auth/Login" class="btn btn-outline-light btn-sm me-2">
+                            <i class="fas fa-sign-in-alt"></i> Giriş
+                        </a>
+                        <a href="/Auth/Register" class="btn btn-light btn-sm">
+                            <i class="fas fa-user-plus"></i> Kayıt Ol
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mt-4 fade-in">
+        @RenderBody()
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/@@microsoft/signalr@@latest/dist/browser/signalr.min.js"></script>
+    
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <script>
+        // Global session management
+        let sessionCheckInterval;
+        let lastActivityTime = Date.now();
+        
+        // Session durumunu kontrol et
+        function checkSession() {
+            fetch('/Chat/GetUsers', {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (response.status === 401) {
+                    clearInterval(sessionCheckInterval);
+                    showSessionExpiredMessage();
+                    setTimeout(() => {
+                        window.location.href = '/Auth/Login';
+                    }, 3000);
+                } else if (!response.ok && response.status !== 200) {
+                    console.warn('Session check failed:', response.status);
+                }
+            })
+            .catch(error => {
+                console.warn('Session check error:', error);
+            });
+        }
+        
+        function showSessionExpiredMessage() {
+            // Toast notification göster
+            const toastContainer = document.getElementById('toast-container') || createToastContainer();
+            const toast = document.createElement('div');
+            toast.className = 'toast align-items-center text-white bg-warning border-0';
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            toast.setAttribute('aria-atomic', 'true');
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fas fa-exclamation-triangle"></i> Oturum süresi doldu. 3 saniye sonra giriş sayfasına yönlendirileceksiniz...
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            toastContainer.appendChild(toast);
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+        }
+        
+        function createToastContainer() {
+            const container = document.createElement('div');
+            container.id = 'toast-container';
+            container.className = 'toast-container position-fixed top-0 end-0 p-3';
+            container.style.zIndex = '9999';
+            document.body.appendChild(container);
+            return container;
+        }
+        
+        // Aktivite tracking
+        function updateActivity() {
+            lastActivityTime = Date.now();
+        }
+        
+        // Mouse ve keyboard aktivitelerini takip et
+        ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'].forEach(event => {
+            document.addEventListener(event, updateActivity, true);
+        });
+        
+        // Her 2 dakikada bir session kontrol et
+        sessionCheckInterval = setInterval(checkSession, 2 * 60 * 1000);
+        
+        // Sayfa kapatılırken interval'i temizle
+        window.addEventListener('beforeunload', () => {
+            clearInterval(sessionCheckInterval);
+        });
+        
+        // Global logout function
+        async function performLogout(event) {
+            event.preventDefault();
+            
+            try {
+                console.log('🚪 Starting logout process...');
+                
+                const response = await fetch('/Auth/Logout', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                console.log('✅ Logout response:', result);
+                
+                // Session temizle
+                if (typeof sessionCheckInterval !== 'undefined') {
+                    clearInterval(sessionCheckInterval);
+                }
+                
+                // Local storage temizle
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                // Redirect to login
+                window.location.href = '/Auth/Login';
+                
+            } catch (error) {
+                console.error('❌ Logout error:', error);
+                
+                // Hata olsa bile çıkış yap
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.href = '/Auth/Login';
+            }
+        }
+        </script>
+    }
+    
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

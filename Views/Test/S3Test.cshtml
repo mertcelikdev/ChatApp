@@ -1,0 +1,103 @@
+@{
+    ViewData["Title"] = "S3 Test";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-cloud-upload-alt"></i> AWS S3 Test</h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <button class="btn btn-info" onclick="testS3Connection()">
+                            <i class="fas fa-plug"></i> S3 Bağlantısını Test Et
+                        </button>
+                    </div>
+
+                    <hr>
+
+                    <form id="uploadForm" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="file" class="form-label">Profil Resmi Seç:</label>
+                            <input type="file" class="form-control" id="file" name="file" accept="image/*" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload"></i> Yükle
+                        </button>
+                    </form>
+
+                    <div id="result" class="mt-4"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function testS3Connection() {
+    try {
+        const response = await fetch('/Test/S3Test');
+        const result = await response.json();
+        
+        const resultDiv = document.getElementById('result');
+        if (result.success) {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h5>✅ ${result.message}</h5>
+                    <p><strong>User ID:</strong> ${result.user.id}</p>
+                    <p><strong>Username:</strong> ${result.user.username}</p>
+                    <p><strong>Current Profile Image:</strong> <br>
+                       <img src="${result.user.profileImageUrl}" alt="Profile" style="max-width: 100px; border-radius: 50%;"></p>
+                    <p><strong>Default Avatar URL:</strong> <br>
+                       <img src="${result.user.defaultAvatarUrl}" alt="Default" style="max-width: 100px; border-radius: 50%;"></p>
+                </div>
+            `;
+        } else {
+            resultDiv.innerHTML = `<div class="alert alert-danger">❌ ${result.message}</div>`;
+        }
+    } catch (error) {
+        document.getElementById('result').innerHTML = `<div class="alert alert-danger">❌ Error: ${error.message}</div>`;
+    }
+}
+
+document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const fileInput = document.getElementById('file');
+    if (!fileInput.files[0]) {
+        alert('Lütfen bir dosya seçin');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+
+    const resultDiv = document.getElementById('result');
+    resultDiv.innerHTML = '<div class="alert alert-info">⏳ Yükleniyor...</div>';
+
+    try {
+        const response = await fetch('/Test/UploadTest', {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h5>✅ ${result.message}</h5>
+                    <p><strong>Image URL:</strong> <a href="${result.imageUrl}" target="_blank">${result.imageUrl}</a></p>
+                    <img src="${result.imageUrl}" alt="Uploaded" style="max-width: 200px; border-radius: 10px;">
+                </div>
+            `;
+        } else {
+            resultDiv.innerHTML = `<div class="alert alert-danger">❌ ${result.message}</div>`;
+        }
+    } catch (error) {
+        resultDiv.innerHTML = `<div class="alert alert-danger">❌ Error: ${error.message}</div>`;
+    }
+});
+</script>

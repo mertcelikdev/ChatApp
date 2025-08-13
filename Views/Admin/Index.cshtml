@@ -1,0 +1,354 @@
+@model IEnumerable<ChatApp.Models.User>
+@{
+    ViewData["Title"] = "Admin Panel - Kullanıcı Yönetimi";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">
+                <i class="fas fa-users-cog text-primary me-2"></i>
+                Kullanıcı Yönetimi
+            </h1>
+            <p class="text-muted mb-0">Sistem kullanıcılarını yönetin</p>
+        </div>
+        <div>
+            <a href="/Admin/CreateUser" class="btn btn-primary">
+                <i class="fas fa-user-plus me-2"></i>Yeni Kullanıcı
+            </a>
+            <a href="/Chat" class="btn btn-outline-secondary">
+                <i class="fas fa-comments me-2"></i>Chat'e Dön
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">@Model.Count()</h4>
+                            <p class="card-text">Toplam Kullanıcı</p>
+                        </div>
+                        <i class="fas fa-users fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">@Model.Count(u => u.IsOnline)</h4>
+                            <p class="card-text">Online Kullanıcı</p>
+                        </div>
+                        <i class="fas fa-circle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">@Model.Count()</h4>
+                            <p class="card-text">Toplam Hesap</p>
+                        </div>
+                        <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">0</h4>
+                            <p class="card-text">Deaktif Hesap</p>
+                        </div>
+                        <i class="fas fa-user-times fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="card shadow">
+        <div class="card-header bg-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>Kullanıcı Listesi
+                </h5>
+                <div class="input-group" style="width: 300px;">
+                    <span class="input-group-text">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Kullanıcı ara...">
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="usersTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="60">Avatar</th>
+                            <th>Kullanıcı</th>
+                            <th>E-posta</th>
+                            <th>Durum</th>
+                            <th>Son Giriş</th>
+                            <th>Kayıt Tarihi</th>
+                            <th width="200">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model.OrderBy(u => u.Username))
+                        {
+                            <tr data-user-id="@user.Id">
+                                <td>
+                                    <img src="@(string.IsNullOrEmpty(user.ProfileImageUrl) ? "https://via.placeholder.com/40?text=U" : user.ProfileImageUrl)" 
+                                         alt="@user.DisplayName" 
+                                         class="rounded-circle" 
+                                         width="40" height="40"
+                                         style="object-fit: cover;">
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong>@user.DisplayName</strong>
+                                        <br>
+                                        <small class="text-muted">@@user.Username</small>
+                                    </div>
+                                </td>
+                                <td>@user.Email</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        @if (user.IsOnline)
+                                        {
+                                            <span class="badge bg-success me-2">
+                                                <i class="fas fa-circle"></i> @user.UserStatus
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary me-2">
+                                                <i class="fas fa-circle"></i> @user.UserStatus
+                                            </span>
+                                        }
+                                        
+                                        @if (true)
+                                        {
+                                            <span class="badge bg-info">Hesap Aktif</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning">Hesap Deaktif</span>
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (user.LastLoginAt.HasValue)
+                                    {
+                                        <span title="@user.LastLoginAt.Value.ToString("dd.MM.yyyy HH:mm")">
+                                            @user.LastLoginAt.Value.ToString("dd.MM.yyyy")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Hiç giriş yapmamış</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span title="@user.CreatedAt.ToString("dd.MM.yyyy HH:mm")">
+                                        @user.CreatedAt.ToString("dd.MM.yyyy")
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="/Admin/UserDetails/@user.Id" class="btn btn-outline-info" title="Detaylar">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="/Admin/EditUser/@user.Id" class="btn btn-outline-warning" title="Düzenle">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        @if (user.IsOnline)
+                                        {
+                                            <button type="button" class="btn btn-outline-secondary" onclick="forceLogout(@user.Id)" title="Zorla Çıkış">
+                                                <i class="fas fa-sign-out-alt"></i>
+                                            </button>
+                                        }
+                                        <button type="button" class="btn btn-outline-@(true ? "warning" : "success")" 
+                                                onclick="toggleUserStatus(@user.Id)" 
+                                                title="@(true ? "Deaktif Yap" : "Aktif Yap")">
+                                            <i class="fas fa-@(true ? "ban" : "check")"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger" onclick="deleteUser(@user.Id, '@user.Username')" title="Sil">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="actionToast" class="toast" role="alert">
+        <div class="toast-header">
+            <strong class="me-auto">
+                <i class="fas fa-info-circle text-primary"></i>
+                Bilgi
+            </strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('#usersTable tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        // Toast helper
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('actionToast');
+            const toastBody = toast.querySelector('.toast-body');
+            const toastHeader = toast.querySelector('.toast-header strong i');
+            
+            toastBody.textContent = message;
+            
+            // Reset classes
+            toastHeader.className = 'fas fa-info-circle';
+            
+            if (type === 'success') {
+                toastHeader.className = 'fas fa-check-circle text-success';
+            } else if (type === 'error') {
+                toastHeader.className = 'fas fa-exclamation-triangle text-danger';
+            }
+            
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+        }
+
+        // Force logout user
+        function forceLogout(userId) {
+            if (confirm('Bu kullanıcıyı zorla çıkış yaptırmak istediğinizden emin misiniz?')) {
+                fetch('/Admin/ForceLogout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'id=' + userId
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showToast(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    showToast('İşlem sırasında bir hata oluştu!', 'error');
+                });
+            }
+        }
+
+        // Toggle user status
+        function toggleUserStatus(userId) {
+            if (confirm('Bu kullanıcının durumunu değiştirmek istediğinizden emin misiniz?')) {
+                fetch('/Admin/ToggleUserStatus', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'id=' + userId
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showToast(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    showToast('İşlem sırasında bir hata oluştu!', 'error');
+                });
+            }
+        }
+
+        // Delete user
+        function deleteUser(userId, username) {
+            if (confirm(`'${username}' kullanıcısını silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!`)) {
+                fetch('/Admin/DeleteUser', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'id=' + userId
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showToast(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    showToast('İşlem sırasında bir hata oluştu!', 'error');
+                });
+            }
+        }
+    </script>
+}
+
+<style>
+    .card {
+        border: none;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .btn-group-sm > .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .badge {
+        font-size: 0.7em;
+    }
+    
+    .toast {
+        min-width: 300px;
+    }
+</style>

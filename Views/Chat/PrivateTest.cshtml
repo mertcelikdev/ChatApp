@@ -1,0 +1,71 @@
+@{
+    ViewData["Title"] = "Test Private Chat";
+    Layout = "_Layout";
+}
+
+<div class="container mt-4">
+    <h3>Test Chat</h3>
+    
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" id="messageInput" placeholder="Mesaj yazın...">
+        <button class="btn btn-primary" type="button" id="sendButton">Gönder</button>
+    </div>
+    
+    <p>Karakter sayısı: <span id="charCount">0</span>/500</p>
+    <p>Button durumu: <span id="buttonStatus">Kontrol ediliyor...</span></p>
+    
+    <div id="debug"></div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔍 DOM loaded!');
+    
+    const messageInput = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendButton');
+    const charCount = document.getElementById('charCount');
+    const buttonStatus = document.getElementById('buttonStatus');
+    const debug = document.getElementById('debug');
+    
+    console.log('Elements:', { messageInput, sendButton, charCount });
+    
+    // Test karakter sayımı
+    messageInput.addEventListener('input', function() {
+        const length = this.value.length;
+        charCount.textContent = length;
+        console.log('Input changed:', this.value, 'Length:', length);
+        
+        // Button durumunu güncelle
+        if (length > 0) {
+            sendButton.disabled = false;
+            buttonStatus.textContent = 'Aktif';
+            buttonStatus.className = 'text-success';
+        } else {
+            sendButton.disabled = true;
+            buttonStatus.textContent = 'Pasif (mesaj boş)';
+            buttonStatus.className = 'text-danger';
+        }
+        
+        debug.innerHTML = `
+            <strong>Debug Info:</strong><br>
+            Input value: "${this.value}"<br>
+            Length: ${length}<br>
+            Button disabled: ${sendButton.disabled}
+        `;
+    });
+    
+    sendButton.addEventListener('click', function() {
+        const message = messageInput.value.trim();
+        console.log('Send clicked:', message);
+        alert('Mesaj: ' + message);
+    });
+    
+    // Enter tuşu
+    messageInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !sendButton.disabled) {
+            console.log('Enter pressed');
+            sendButton.click();
+        }
+    });
+});
+</script>

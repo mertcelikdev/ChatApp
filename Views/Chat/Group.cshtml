@@ -1,0 +1,181 @@
+@model ChatApp.Models.Group
+@{
+    ViewData["Title"] = "Grup Sohbet - " + Model.Name;
+    Layout = "_Layout";
+}
+
+@section Styles {
+<link rel="stylesheet" href="/css/chat-modern.css" />
+<link rel="stylesheet" href="/css/group-chat.css" />
+}
+
+<div class="container-fluid p-0 chat-modern" style="height:75vh; max-height:600px;">
+    <div class="row g-0 h-100">
+        <!-- Group Chat Interface -->
+        <main class="col-12 conversation">
+            <!-- Group Header -->
+            <div class="conv-header group-header">
+                <div class="avatar group-avatar">
+                    @if (!string.IsNullOrEmpty(Model.GroupImageUrl))
+                    {
+                        <img src="@Model.GroupImageUrl" alt="@Model.Name" />
+                    }
+                    else
+                    {
+                        <span>@Model.Name.First()</span>
+                    }
+                </div>
+                <div class="flex-grow-1">
+                    <div class="d-flex align-items-center gap-2">
+                        <h6 class="mb-0 group-name">@Model.Name</h6>
+                        <span class="badge bg-secondary group-member-count" id="memberCount">@Model.GroupMembers.Count üye</span>
+                    </div>
+                    <small class="text-dim group-description">@Model.Description</small>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn-icon" id="btnGroupInfo" title="Grup Bilgileri" data-bs-toggle="modal" data-bs-target="#groupInfoModal">
+                        <i class="bi bi-info-circle"></i>
+                    </button>
+                    <button class="btn-icon" id="btnGroupMembers" title="Üyeler" data-bs-toggle="modal" data-bs-target="#membersModal">
+                        <i class="bi bi-people"></i>
+                    </button>
+                    <button class="btn-icon" id="btnGroupSettings" title="Ayarlar">
+                        <i class="bi bi-gear"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Messages Area -->
+            <div class="scroll-area" id="groupMessages" style="flex: 1; padding: 16px;">
+                <div class="system-msg text-center text-dim small" id="groupWelcome">
+                    <i class="bi bi-people-fill me-2"></i>@Model.Name grubuna hoş geldiniz!
+                </div>
+            </div>
+
+            <!-- Composer -->
+            <div class="composer group-composer">
+                <div class="composer-row">
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="btn-icon" id="btnGroupImageUpload" title="Fotoğraf Yükle">
+                            <i class="bi bi-image"></i>
+                        </button>
+                        <input type="file" id="groupImageInput" accept="image/*" style="display: none;">
+                        <button class="btn-icon" id="btnGroupFile" title="Dosya Ekle">
+                            <i class="bi bi-paperclip"></i>
+                        </button>
+                    </div>
+                    <textarea id="groupMessageInput" class="composer-input" rows="1" placeholder="@Model.Name grubuna mesaj yaz..." maxlength="500"></textarea>
+                    <button class="btn-send" id="groupSendButton">
+                        <i class="bi bi-send"></i>
+                    </button>
+                </div>
+                <div class="d-flex justify-content-between px-1">
+                    <small class="text-dim" id="groupHint">Gruba mesaj göndermek için yazın...</small>
+                    <small class="text-dim"><span id="groupCharCount">0</span>/500</small>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Group Info Modal -->
+<div class="modal fade" id="groupInfoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Grup Bilgileri</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <div class="avatar mx-auto mb-2" style="width: 80px; height: 80px; font-size: 2rem;">
+                        @if (!string.IsNullOrEmpty(Model.GroupImageUrl))
+                        {
+                            <img src="@Model.GroupImageUrl" alt="@Model.Name" />
+                        }
+                        else
+                        {
+                            <span>@Model.Name.First()</span>
+                        }
+                    </div>
+                    <h5>@Model.Name</h5>
+                    <p class="text-muted">@Model.Description</p>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-6 text-center">
+                        <strong>@Model.GroupMembers.Count</strong>
+                        <br><small class="text-muted">Üye</small>
+                    </div>
+                    <div class="col-6 text-center">
+                        <strong>@Model.CreatedAt.ToString("dd.MM.yyyy")</strong>
+                        <br><small class="text-muted">Oluşturulma</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Members Modal -->
+<div class="modal fade" id="membersModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Grup Üyeleri</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" id="memberSearch" placeholder="Üye ara...">
+                </div>
+                <div id="membersList">
+                    @foreach (var member in Model.GroupMembers.Where(m => m.IsActive))
+                    {
+                        <div class="member-item d-flex align-items-center mb-2 p-2 rounded" data-member-id="@member.UserId">
+                            <div class="avatar me-3">
+                                @if (!string.IsNullOrEmpty(member.User.ProfileImageUrl))
+                                {
+                                    <img src="@member.User.ProfileImageUrl" alt="@member.User.DisplayName" />
+                                }
+                                else
+                                {
+                                    <span>@member.User.DisplayName.First()</span>
+                                }
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-medium">@member.User.DisplayName</div>
+                                <small class="text-muted">@@@member.User.Username</small>
+                                @if (member.IsAdmin)
+                                {
+                                    <span class="badge bg-primary ms-2">Admin</span>
+                                }
+                            </div>
+                            <div class="member-actions">
+                                <!-- Member action buttons will be added via JavaScript based on permissions -->
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btnAddMember">
+                    <i class="bi bi-person-plus me-2"></i>Üye Ekle
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script src="/js/group-chat.js"></script>
+<script>
+    window.__groupId = @Model.Id;
+    window.__groupName = '@Model.Name';
+    window.__currentUser = '@ViewBag.Username';
+    window.__currentUserDisplayName = '@ViewBag.DisplayName';
+    window.__currentUserProfileImage = '@ViewBag.ProfileImageUrl';
+    window.__isGroupAdmin = @Json.Serialize(Model.GroupMembers.Any(m => m.UserId == ViewBag.UserId && m.IsAdmin));
+</script>
+}
